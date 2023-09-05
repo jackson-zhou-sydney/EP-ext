@@ -4,6 +4,10 @@
 library(tidyverse)
 library(rstan)
 library(kernlab)
+library(doParallel)
+library(abind)
+
+registerDoParallel(cores = 8)
 
 mcmc_chains <- 4
 mcmc_cores <- 4

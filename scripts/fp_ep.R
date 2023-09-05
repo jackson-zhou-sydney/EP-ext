@@ -30,43 +30,46 @@ ti <- function(mu, sigma_2) {
   return(list(mu = h_mu, sigma_2 = h_sigma_2))
 }
 
-power_ep <- function(X, y, mu_beta, Sigma_beta,
-                     alpha, r_init, Q_init,
-                     min_pass, max_pass, thresh, verbose) {
-  # Power EP for probit regression
+fp_ep <- function(X, y, mu_beta, Sigma_beta,
+                  r_init, Q_init,
+                  min_pass, max_pass, thresh, verbose) {
+  # Fully-parallel EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
   Z <- X*(2*y - 1)
   
   # Parameter initialisation
-  Q_values <- array(0, c(p, p, N))
-  r_values <- matrix(0, p, N)
-  
   Q_p <- solve(Sigma_beta)
   r_p <- Q_p%*%mu_beta
   
-  Q_dot <- Q_p
-  r_dot <- r_p
-  
-  for (n in 1:N) {
-    Q_values[, , n] <- Q_init
-    r_values[, n] <- r_init
+  foreach_res <- foreach(n = 1:N) %dopar% {
+    Q_tilde <- Q_init
+    r_tilde <- r_init
     
-    Q_dot <- Q_dot + Q_values[, , n]
-    r_dot <- r_dot + r_values[, n]
+    Q_dot_local <- Q_tilde
+    r_dot_local <- r_tilde
+    
+    return(list(Q_tilde = Q_tilde, 
+                r_tilde = r_tilde,
+                Q_dot_local = Q_dot_local, 
+                r_dot_local = r_dot_local))
   }
+  
+  transpose_res <- transpose(foreach_res)
+  
+  Q_values <- abind(transpose_res$Q_tilde, along = 3)
+  r_values <- do.call(cbind, transpose_res$r_tilde)
+  
+  Q_dot <- Q_p + Reduce("+", transpose_res$Q_dot_local)
+  r_dot <- r_p + Reduce("+", transpose_res$r_dot_local)
   
   # Main EP loop
   for (pass in 1:max_pass) {
-    # Delta initialisation
-    deltas_Q <- rep(0, N)
-    deltas_r <- rep(0, N)
-    
     if (verbose) print(paste0("---- Current pass: ", pass, " ----"))
     
-    for (n in sample(1:N)) {
-      Q_c <- Q_dot - alpha*Q_values[, , n]
-      r_c <- r_dot - alpha*r_values[, n]
+    foreach_res <- foreach(n = 1:N) %dopar% {
+      Q_c <- Q_dot - Q_values[, , n]
+      r_c <- r_dot - r_values[, n]
       
       Sigma_c <- solve(Q_c)
       mu_c <- Sigma_c%*%r_c
@@ -81,21 +84,36 @@ power_ep <- function(X, y, mu_beta, Sigma_beta,
       Q_h_star <- solve(ti_res$sigma_2)
       r_h_star <- Q_h_star%*%ti_res$mu
       
-      Q_tilde <- Z[n, ]%*%(Q_h_star - Q_c_star)%*%t(Z[n, ])/alpha
-      r_tilde <- Z[n, ]%*%(r_h_star - r_c_star)/alpha
+      Q_tilde <- Z[n, ]%*%(Q_h_star - Q_c_star)%*%t(Z[n, ])
+      r_tilde <- Z[n, ]%*%(r_h_star - r_c_star)
       
       Q_tilde_d <- Q_tilde - Q_values[, , n]
       r_tilde_d <- r_tilde - r_values[, n]
       
-      deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_Q_local <- norm(Q_tilde_d, "F")
+      deltas_r_local <- norm(r_tilde_d, "F")
       
-      Q_dot <- Q_dot + Q_tilde_d
-      r_dot <- r_dot + r_tilde_d
+      Q_dot_local <- Q_tilde
+      r_dot_local <- r_tilde
       
-      Q_values[, , n] <- Q_tilde
-      r_values[, n] <- r_tilde
+      return(list(Q_tilde = Q_tilde, 
+                  r_tilde = r_tilde,
+                  deltas_Q_local = deltas_Q_local,
+                  deltas_r_local = deltas_r_local,
+                  Q_dot_local = Q_dot_local, 
+                  r_dot_local = r_dot_local))
     }
+    
+    transpose_res <- transpose(foreach_res)
+    
+    Q_values <- abind(transpose_res$Q_tilde, along = 3)
+    r_values <- do.call(cbind, transpose_res$r_tilde)
+    
+    deltas_Q <- unlist(transpose_res$deltas_Q_local)
+    deltas_r <- unlist(transpose_res$deltas_r_local)
+    
+    Q_dot <- Q_p + Reduce("+", transpose_res$Q_dot_local)
+    r_dot <- r_p + Reduce("+", transpose_res$r_dot_local)
     
     if (pass == 1) {
       # Base maximum deltas
