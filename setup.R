@@ -6,6 +6,7 @@ library(rstan)
 library(kernlab)
 library(doParallel)
 library(abind)
+library(sn)
 
 registerDoParallel(cores = 8)
 
