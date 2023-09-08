@@ -7,10 +7,6 @@ library(kernlab)
 library(doParallel)
 library(abind)
 library(sn)
-library(mvtnorm)
-library(matrixsampling)
-library(randomForest)
-library(ranger)
 
 registerDoParallel(cores = 8)
 

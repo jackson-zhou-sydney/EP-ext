@@ -24,10 +24,10 @@ ti <- function(mu, sigma_2) {
   tm_1 <- sigma*int_1(mu, sigma) + mu*tm_0
   tm_2 <- sigma_2*int_2(mu, sigma) + 2*mu*tm_1 - mu^2*tm_0
   
-  h_mu <- tm_1/tm_0
-  h_sigma_2 <- tm_2/tm_0 - h_mu^2
+  mu_h <- tm_1/tm_0
+  sigma_2_h <- tm_2/tm_0 - mu_h^2
   
-  return(list(mu = h_mu, sigma_2 = h_sigma_2))
+  return(list(mu = mu_h, sigma_2 = sigma_2_h))
 }
 
 power_ep <- function(X, y, mu_beta, Sigma_beta,
