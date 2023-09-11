@@ -7,6 +7,10 @@ library(kernlab)
 library(doParallel)
 library(abind)
 library(sn)
+library(plyr)
+library(condmixt)
+library(Matrix)
+library(calculus)
 
 registerDoParallel(cores = 8)
 

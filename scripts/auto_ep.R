@@ -78,7 +78,7 @@ gen_train <- function(X, y, mu_beta, Sigma_beta,
       r_tilde_d <- r_tilde - r_values[, n]
       
       deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_r[n] <- norm(r_tilde_d, "2")
       
       Q_dot <- Q_dot + Q_tilde_d
       r_dot <- r_dot + r_tilde_d
@@ -144,7 +144,7 @@ knn <- function(x, X_train, y_1_train, y_2_train, k) {
   
   return(list(y_1 = mean(y_1_train[small_inds]),
               y_2 = mean(y_2_train[small_inds]),
-              u = mean(dists[small_inds])))
+              u = max(dists[small_inds])))
 }
 
 knn_u_max <- function(X, y_1, y_2, D_1_max, D_2_max, k, folds) {
@@ -237,16 +237,20 @@ auto_ep <- function(X, y, mu_beta, Sigma_beta,
       Q_star_tilde <- Q_h_star - Q_c_star
       r_star_tilde <- r_h_star - r_c_star
       
-      Q_tilde <- Z[n, ]%*%Q_star_tilde%*%t(Z[n, ])
-      r_tilde <- Z[n, ]%*%r_star_tilde
-      
-      if (Q_star_tilde < 0) Q_tilde <- as.matrix(Matrix::nearPD(Q_tilde)$mat)
+      if (Q_star_tilde < 0) {
+        Q_tilde <- tryCatch(as.matrix(nearPD(Z[n, ]%*%Q_star_tilde%*%t(Z[n, ]))$mat), error = function(e) NA)
+        r_tilde <- Z[n, ]%*%r_star_tilde
+        if (!is.matrix(Q_tilde)) next
+      } else {
+        Q_tilde <- Z[n, ]%*%Q_star_tilde%*%t(Z[n, ])
+        r_tilde <- Z[n, ]%*%r_star_tilde
+      }
       
       Q_tilde_d <- Q_tilde - Q_values[, , n]
       r_tilde_d <- r_tilde - r_values[, n]
       
       deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_r[n] <- norm(r_tilde_d, "2")
       
       Q_dot <- Q_dot + Q_tilde_d
       r_dot <- r_dot + r_tilde_d

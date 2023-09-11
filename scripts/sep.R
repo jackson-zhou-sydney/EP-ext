@@ -30,9 +30,9 @@ ti <- function(mu, sigma_2) {
   return(list(mu = mu_h, sigma_2 = sigma_2_h))
 }
 
-stochastic_ep <- function(X, y, mu_beta, Sigma_beta,
-                          r_init, Q_init,
-                          min_pass, max_pass, thresh, verbose) {
+sep <- function(X, y, mu_beta, Sigma_beta,
+                r_init, Q_init,
+                min_pass, max_pass, thresh, verbose) {
   # Stochastic EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -80,7 +80,7 @@ stochastic_ep <- function(X, y, mu_beta, Sigma_beta,
       r_tilde_d <- r_tilde - r
       
       deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_r[n] <- norm(r_tilde_d, "2")
       
       Q_dot <- Q_dot + N*Q_tilde_d
       r_dot <- r_dot + N*r_tilde_d

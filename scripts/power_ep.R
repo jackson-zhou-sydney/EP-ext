@@ -88,7 +88,7 @@ power_ep <- function(X, y, mu_beta, Sigma_beta,
       r_tilde_d <- r_tilde - r_values[, n]
       
       deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_r[n] <- norm(r_tilde_d, "2")
       
       Q_dot <- Q_dot + Q_tilde_d
       r_dot <- r_dot + r_tilde_d

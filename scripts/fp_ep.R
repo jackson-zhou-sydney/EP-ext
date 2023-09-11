@@ -91,7 +91,7 @@ fp_ep <- function(X, y, mu_beta, Sigma_beta,
       r_tilde_d <- r_tilde - r_values[, n]
       
       deltas_Q_local <- norm(Q_tilde_d, "F")
-      deltas_r_local <- norm(r_tilde_d, "F")
+      deltas_r_local <- norm(r_tilde_d, "2")
       
       Q_dot_local <- Q_tilde
       r_dot_local <- r_tilde

@@ -24,9 +24,9 @@ ti_l_site <- function(mu, sigma_2) {
   return(list(r = r, Q = Q))
 }
 
-laplace_prop_site <- function(X, y, mu_beta, Sigma_beta,
-                              r_init, Q_init,
-                              min_pass, max_pass, thresh, verbose) {
+lp_site <- function(X, y, mu_beta, Sigma_beta,
+                    r_init, Q_init,
+                    min_pass, max_pass, thresh, verbose) {
   # Laplace propagation using sites for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -88,7 +88,7 @@ laplace_prop_site <- function(X, y, mu_beta, Sigma_beta,
       r_tilde_d <- r_tilde - r_values[, n]
       
       deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_r[n] <- norm(r_tilde_d, "2")
       
       Q_dot <- Q_dot + Q_tilde_d
       r_dot <- r_dot + r_tilde_d
@@ -139,9 +139,9 @@ ti_l_tilted <- function(mu, sigma_2) {
   return(list(mu = x_star, sigma_2 = -solve(log_h_hess(x_star, mu, sigma_2))))
 }
 
-laplace_prop_tilted <- function(X, y, mu_beta, Sigma_beta,
-                                r_init, Q_init,
-                                min_pass, max_pass, thresh, verbose) {
+lp_tilted <- function(X, y, mu_beta, Sigma_beta,
+                      r_init, Q_init,
+                      min_pass, max_pass, thresh, verbose) {
   # Laplace propagation using tilted distributions for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -197,7 +197,7 @@ laplace_prop_tilted <- function(X, y, mu_beta, Sigma_beta,
       r_tilde_d <- r_tilde - r_values[, n]
       
       deltas_Q[n] <- norm(Q_tilde_d, "F")
-      deltas_r[n] <- norm(r_tilde_d, "F")
+      deltas_r[n] <- norm(r_tilde_d, "2")
       
       Q_dot <- Q_dot + Q_tilde_d
       r_dot <- r_dot + r_tilde_d
