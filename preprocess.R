@@ -6,12 +6,9 @@ set.seed(1)
 
 ## Generating the data
 
-data(musk)
-
-X <- cbind(1, unname(scale(musk[, -167])))
-attr(X, "scaled:center") <- NULL
-attr(X, "scaled:scale") <- NULL
-y <- as.numeric(musk$Class) - 1
+o_rings <- read.csv("data/challenger.csv")
+X <- cbind(1, scale(o_rings[, 2:3]))
+y <- as.numeric(o_rings[, 1] != 0)
 
 N <- nrow(X)
 p <- ncol(X)
@@ -19,7 +16,7 @@ p <- ncol(X)
 mu_beta <- rep(0, p)
 Sigma_beta <- 10000*diag(p)
 
-save(N, p, X, y, mu_beta, Sigma_beta, file = "data/musk.RData")
+save(N, p, X, y, mu_beta, Sigma_beta, file = "data/o_rings.RData")
 
 ## MCMC gold standard
 
