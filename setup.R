@@ -45,3 +45,14 @@ D_max <- 0.01
 thresh <- 0.01
 thresh_grad <- 0.001
 verbose <- F
+
+method_labs <- c("auto_ep" = "AEP",
+                 "bbep" = "BBEP",
+                 "dep" = "DEP",
+                 "dlep" = "DLEP",
+                 "ep" = "EP",
+                 "fpep" = "FPEP",
+                 "lp_site" = "LP-S",
+                 "lp_tilted" = "LP-T",
+                 "pep" = "PEP",
+                 "sep" = "SEP")
