@@ -1,36 +1,30 @@
-log_int_0 <- function(a, b) {
-  # Log of integral of pnorm(a + b*x)*dnorm(x) from -Inf to Inf
-  # Source: A table of normal integrals (Owen, 1980)
-  return(pnorm(a/sqrt(1 + b^2), log.p = T))
+log_h <- function(x, mu, sigma_2) {
+  # Log density of tilted distribution
+  return(pnorm(x, log.p = T) + dnorm(x, mu, sqrt(sigma_2), log = T))
 }
 
-int_1_shift <- function(a, b, c) {
-  # Integral of x*pnorm(a + b*x)*dnorm(x)*exp(c) from -Inf to Inf
-  # Source: A table of normal integrals (Owen, 1980)
-  return((b/sqrt(1 + b^2))*exp(dnorm(a/sqrt(1 + b^2), log = T) + c))
+log_h_grad <- function(x, mu, sigma_2) {
+  # Gradient of log density of tilted distribution
+  return(sn::zeta(1, x) - (x - mu)/sigma_2)
 }
 
-int_2_shift <- function(a, b, c) {
-  # Integral of x^2*pnorm(a + b*x)*dnorm(x)*exp(c) from -Inf to Inf
-  # Source: The explicit form of expectation propagation for a simple statistical model (Kim and Wand, 2016)
-  return(exp(pnorm(a/sqrt(1 + b^2), log.p = T) + c) - (a*b^2/(1 + b^2)^(3/2))*exp(dnorm(a/sqrt(1 + b^2), log = T) + c))
+log_h_hess <- function(x, mu, sigma_2) {
+  # Hessian of log density of tilted distribution
+  return(sn::zeta(2, x) - 1/sigma_2)
 }
 
-ti <- function(mu, sigma_2) {
-  # Tilted inference for probit regression
-  sigma <- sqrt(sigma_2)
+ti_l_tilted <- function(mu, sigma_2) {
+  # Approximate tilted inference for probit regression using Laplace's method (tilted)
+  x_star <- optim(mu, log_h, log_h_grad, mu = mu, sigma_2 = sigma_2,
+                  control = list(fnscale = -1), method = "BFGS")$par
   
-  log_tm_0 <- log_int_0(mu, sigma)
-  tm_1 <- sigma*int_1_shift(mu, sigma, -log_tm_0) + mu
-  tm_2 <- sigma_2*int_2_shift(mu, sigma, -log_tm_0) + 2*mu*tm_1 - mu^2
-  
-  return(list(mu = tm_1, sigma_2 = tm_2 - tm_1^2))
+  return(list(mu = x_star, sigma_2 = -solve(log_h_hess(x_star, mu, sigma_2))))
 }
 
-ep <- function(X, y, mu_beta, Sigma_beta,
-               r_init, Q_init,
-               min_pass, max_pass, thresh, verbose) {
-  # Standard EP for probit regression
+lp_tilted <- function(X, y, mu_beta, Sigma_beta,
+                      r_init, Q_init,
+                      min_pass, max_pass, thresh, verbose) {
+  # Laplace propagation using tilted distributions for probit regression
   N <- nrow(X)
   p <- ncol(X)
   Z <- X*(2*y - 1)
@@ -74,7 +68,7 @@ ep <- function(X, y, mu_beta, Sigma_beta,
       Q_c_star <- solve(Sigma_c_star)
       r_c_star <- Q_c_star%*%mu_c_star
       
-      ti_res <- ti(mu_c_star, Sigma_c_star)
+      ti_res <- ti_l_tilted(mu_c_star, Sigma_c_star)
       Q_h_star <- solve(ti_res$sigma_2)
       r_h_star <- Q_h_star%*%ti_res$mu
       

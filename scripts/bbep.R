@@ -35,7 +35,7 @@ tied_energy <- function(lambda, Z, Q_p, r_p, r_samples) {
     
     for (m in 1:M) {
       q_sample <- Sigma_dot_L%*%r_samples[m, ] + mu_dot
-      subtotal <- subtotal + pnorm(t(Z[n, ])%*%q_sample)/exp(-0.5*t(q_sample)%*%Q%*%q_sample + t(q_sample)%*%r)
+      subtotal <- subtotal + exp(pnorm(t(Z[n, ])%*%q_sample, log.p = T) + 0.5*t(q_sample)%*%Q%*%q_sample - t(q_sample)%*%r)
     }
     
     total <- total + log(subtotal/M)
@@ -44,9 +44,9 @@ tied_energy <- function(lambda, Z, Q_p, r_p, r_samples) {
   return(A(Q_p, r_p) - A(Q_dot, r_dot) - total)
 }
 
-bb_ep <- function(X, y, mu_beta, Sigma_beta,
-                  M, epsilon, tau, r_init, Q_init,
-                  min_iter, max_iter, thresh, verbose) {
+bbep <- function(X, y, mu_beta, Sigma_beta,
+                 M, epsilon, tau, r_init, Q_init,
+                 min_iter, max_iter, thresh, verbose) {
   # Black-box EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -70,7 +70,7 @@ bb_ep <- function(X, y, mu_beta, Sigma_beta,
     r_samples <- matrix(rnorm(M*p), M)
     
     energy <- tied_energy(lambda, Z, Q_p, r_p, r_samples)
-    energy_grad <- gradient(tied_energy, lambda, list(Z = Z, Q_p = Q_p, r_p = r_p, r_samples = r_samples))
+    energy_grad <- calculus::gradient(tied_energy, lambda, list(Z = Z, Q_p = Q_p, r_p = r_p, r_samples = r_samples))
     norm_energy_grad <- norm(energy_grad, "2")
     
     if (verbose) {

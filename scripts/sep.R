@@ -1,33 +1,30 @@
-int_0 <- function(a, b) {
-  # Integral of pnorm(a + b*x)*dnorm(x) from -Inf to Inf
+log_int_0 <- function(a, b) {
+  # Log of integral of pnorm(a + b*x)*dnorm(x) from -Inf to Inf
   # Source: A table of normal integrals (Owen, 1980)
-  return(pnorm(a/sqrt(1 + b^2)))
+  return(pnorm(a/sqrt(1 + b^2), log.p = T))
 }
 
-int_1 <- function(a, b) {
-  # Integral of x*pnorm(a + b*x)*dnorm(x) from -Inf to Inf
+int_1_shift <- function(a, b, c) {
+  # Integral of x*pnorm(a + b*x)*dnorm(x)*exp(c) from -Inf to Inf
   # Source: A table of normal integrals (Owen, 1980)
-  return((b/sqrt(1 + b^2))*dnorm(a/sqrt(1 + b^2)))
+  return((b/sqrt(1 + b^2))*exp(dnorm(a/sqrt(1 + b^2), log = T) + c))
 }
 
-int_2 <- function(a, b) {
-  # Integral of x^2*pnorm(a + b*x)*dnorm(x) from -Inf to Inf
+int_2_shift <- function(a, b, c) {
+  # Integral of x^2*pnorm(a + b*x)*dnorm(x)*exp(c) from -Inf to Inf
   # Source: The explicit form of expectation propagation for a simple statistical model (Kim and Wand, 2016)
-  return(pnorm(a/sqrt(1 + b^2)) - (a*b^2/(1 + b^2)^(3/2))*dnorm(a/sqrt(1 + b^2)))
+  return(exp(pnorm(a/sqrt(1 + b^2), log.p = T) + c) - (a*b^2/(1 + b^2)^(3/2))*exp(dnorm(a/sqrt(1 + b^2), log = T) + c))
 }
 
 ti <- function(mu, sigma_2) {
   # Tilted inference for probit regression
   sigma <- sqrt(sigma_2)
   
-  tm_0 <- int_0(mu, sigma)
-  tm_1 <- sigma*int_1(mu, sigma) + mu*tm_0
-  tm_2 <- sigma_2*int_2(mu, sigma) + 2*mu*tm_1 - mu^2*tm_0
+  log_tm_0 <- log_int_0(mu, sigma)
+  tm_1 <- sigma*int_1_shift(mu, sigma, -log_tm_0) + mu
+  tm_2 <- sigma_2*int_2_shift(mu, sigma, -log_tm_0) + 2*mu*tm_1 - mu^2
   
-  mu_h <- tm_1/tm_0
-  sigma_2_h <- tm_2/tm_0 - mu_h^2
-  
-  return(list(mu = mu_h, sigma_2 = sigma_2_h))
+  return(list(mu = tm_1, sigma_2 = tm_2 - tm_1^2))
 }
 
 sep <- function(X, y, mu_beta, Sigma_beta,

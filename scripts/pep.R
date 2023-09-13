@@ -1,39 +1,36 @@
-int_0 <- function(a, b) {
-  # Integral of pnorm(a + b*x)*dnorm(x) from -Inf to Inf
+log_int_0 <- function(a, b) {
+  # Log of integral of pnorm(a + b*x)*dnorm(x) from -Inf to Inf
   # Source: A table of normal integrals (Owen, 1980)
-  return(pnorm(a/sqrt(1 + b^2)))
+  return(pnorm(a/sqrt(1 + b^2), log.p = T))
 }
 
-int_1 <- function(a, b) {
-  # Integral of x*pnorm(a + b*x)*dnorm(x) from -Inf to Inf
+int_1_shift <- function(a, b, c) {
+  # Integral of x*pnorm(a + b*x)*dnorm(x)*exp(c) from -Inf to Inf
   # Source: A table of normal integrals (Owen, 1980)
-  return((b/sqrt(1 + b^2))*dnorm(a/sqrt(1 + b^2)))
+  return((b/sqrt(1 + b^2))*exp(dnorm(a/sqrt(1 + b^2), log = T) + c))
 }
 
-int_2 <- function(a, b) {
-  # Integral of x^2*pnorm(a + b*x)*dnorm(x) from -Inf to Inf
+int_2_shift <- function(a, b, c) {
+  # Integral of x^2*pnorm(a + b*x)*dnorm(x)*exp(c) from -Inf to Inf
   # Source: The explicit form of expectation propagation for a simple statistical model (Kim and Wand, 2016)
-  return(pnorm(a/sqrt(1 + b^2)) - (a*b^2/(1 + b^2)^(3/2))*dnorm(a/sqrt(1 + b^2)))
+  return(exp(pnorm(a/sqrt(1 + b^2), log.p = T) + c) - (a*b^2/(1 + b^2)^(3/2))*exp(dnorm(a/sqrt(1 + b^2), log = T) + c))
 }
 
 ti <- function(mu, sigma_2) {
   # Tilted inference for probit regression
   sigma <- sqrt(sigma_2)
   
-  tm_0 <- int_0(mu, sigma)
-  tm_1 <- sigma*int_1(mu, sigma) + mu*tm_0
-  tm_2 <- sigma_2*int_2(mu, sigma) + 2*mu*tm_1 - mu^2*tm_0
+  log_tm_0 <- log_int_0(mu, sigma)
+  tm_1 <- sigma*int_1_shift(mu, sigma, -log_tm_0) + mu
+  tm_2 <- sigma_2*int_2_shift(mu, sigma, -log_tm_0) + 2*mu*tm_1 - mu^2
   
-  mu_h <- tm_1/tm_0
-  sigma_2_h <- tm_2/tm_0 - mu_h^2
-  
-  return(list(mu = mu_h, sigma_2 = sigma_2_h))
+  return(list(mu = tm_1, sigma_2 = tm_2 - tm_1^2))
 }
 
-damped_ep <- function(X, y, mu_beta, Sigma_beta,
-                      beta, r_init, Q_init,
-                      min_pass, max_pass, thresh, verbose) {
-  # Damped EP for probit regression
+pep <- function(X, y, mu_beta, Sigma_beta,
+                alpha, r_init, Q_init,
+                min_pass, max_pass, thresh, verbose) {
+  # Power EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
   Z <- X*(2*y - 1)
@@ -65,8 +62,8 @@ damped_ep <- function(X, y, mu_beta, Sigma_beta,
     if (verbose) print(paste0("---- Current pass: ", pass, " ----"))
     
     for (n in sample(1:N)) {
-      Q_c <- Q_dot - Q_values[, , n]
-      r_c <- r_dot - r_values[, n]
+      Q_c <- Q_dot - alpha*Q_values[, , n]
+      r_c <- r_dot - alpha*r_values[, n]
       
       Sigma_c <- solve(Q_c)
       mu_c <- Sigma_c%*%r_c
@@ -81,8 +78,8 @@ damped_ep <- function(X, y, mu_beta, Sigma_beta,
       Q_h_star <- solve(ti_res$sigma_2)
       r_h_star <- Q_h_star%*%ti_res$mu
       
-      Q_tilde <- (1 - beta)*Q_values[, , n] + beta*Z[n, ]%*%(Q_h_star - Q_c_star)%*%t(Z[n, ])
-      r_tilde <- (1 - beta)*r_values[, n] + beta*Z[n, ]%*%(r_h_star - r_c_star)
+      Q_tilde <- Z[n, ]%*%(Q_h_star - Q_c_star)%*%t(Z[n, ])/alpha
+      r_tilde <- Z[n, ]%*%(r_h_star - r_c_star)/alpha
       
       Q_tilde_d <- Q_tilde - Q_values[, , n]
       r_tilde_d <- r_tilde - r_values[, n]

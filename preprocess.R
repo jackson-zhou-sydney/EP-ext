@@ -7,7 +7,7 @@ set.seed(1)
 ## Generating the data
 
 o_rings <- read.csv("data/challenger.csv")
-X <- cbind(1, scale(o_rings[, 2:3]))
+X <- unname(cbind(1, scale(o_rings[, 2:3])))
 y <- as.numeric(o_rings[, 1] != 0)
 
 N <- nrow(X)
