@@ -74,13 +74,14 @@ ggsave("plots/mem_plot.png", plot = mem_plot, dpi = 600, width = 24, height = 14
 combined_plot <- mean_cdf |> 
   ggplot(aes(x = time, y = mean_l1, size = log10(mem), label = method_clean)) +
   geom_point() +
-  geom_text(size = 4, hjust = -0.4, vjust = 0.5) +
+  geom_text(aes(vjust = 0.5 + 0.3*log10(mem)), size = 4, hjust = 0.5) +
   lims(y = c(0.7, 1)) +
-  scale_x_log10(limits = c(0.01, 80)) +
+  scale_x_log10(limits = c(0.01, 40)) +
   labs(x = "Run time in seconds (log scale)", 
        y = "Mean L1 accuracy",
-       size = "Log base 10 of memory usage in bytes") +
+       size = "Memory use\n(log10 bytes)") +
   theme_bw() +
-  theme(legend.position = "top")
+  theme(legend.position = "top",
+        text = element_text(size = 16))
 
-ggsave("plots/combined_plot.png", plot = combined_plot, dpi = 600, width = 14, height = 8, units = "cm")
+ggsave("plots/combined_plot.png", plot = combined_plot, dpi = 600, width = 12, height = 12, units = "cm")
