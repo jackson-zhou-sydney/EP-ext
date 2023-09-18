@@ -82,6 +82,6 @@ combined_plot <- mean_cdf |>
        size = "Memory use\n(log10 bytes)") +
   theme_bw() +
   theme(legend.position = "top",
-        text = element_text(size = 16))
+        text = element_text(size = 14))
 
 ggsave("plots/combined_plot.png", plot = combined_plot, dpi = 600, width = 12, height = 12, units = "cm")
