@@ -23,7 +23,7 @@ ti_l_tilted <- function(mu, sigma_2) {
 
 lp_tilted <- function(X, y, mu_beta, Sigma_beta,
                       r_init, Q_init,
-                      min_pass, max_pass, thresh, verbose) {
+                      min_pass, max_pass, thresh, verbose, mem) {
   # Laplace propagation using tilted distributions for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -86,6 +86,8 @@ lp_tilted <- function(X, y, mu_beta, Sigma_beta,
       
       Q_values[, , n] <- Q_tilde
       r_values[, n] <- r_tilde
+      
+      if (mem) return(NA)
     }
     
     if (pass == 1) {

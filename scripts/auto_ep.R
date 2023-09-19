@@ -178,7 +178,7 @@ knn_u_max <- function(X, y_1, y_2, D_1_max, D_2_max, k, folds) {
 
 auto_ep <- function(X, y, mu_beta, Sigma_beta,
                     k, train_df, u_max, M, r_init, Q_init,
-                    min_pass, max_pass, thresh, pat, verbose) {
+                    min_pass, max_pass, thresh, pat, verbose, mem) {
   # Automatic EP for probit regression using k-nearest neighbours
   N <- nrow(X)
   p <- ncol(X)
@@ -257,6 +257,8 @@ auto_ep <- function(X, y, mu_beta, Sigma_beta,
       
       Q_values[, , n] <- Q_tilde
       r_values[, n] <- r_tilde
+      
+      if (mem) return(NA)
     }
     
     if (pass == 1) {

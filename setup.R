@@ -25,6 +25,7 @@ total_grid_points <- 1000
 sd_multiple <- 5
 n_init <- 10
 
+fpep_cores <- 8
 M_bb <- 50
 M_auto <- 1000
 epsilon <- 0.01

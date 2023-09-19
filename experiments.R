@@ -34,7 +34,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); ep(X, y, mu_beta, Sigma_beta, 
                                      r_init, Q_init, 
-                                     min_pass, max_pass, thresh, verbose)},
+                                     min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -45,11 +45,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); ep(X, y, mu_beta, Sigma_beta, 
                                           r_init, Q_init, 
-                                          min_pass, max_pass, thresh, verbose)})
+                                          min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); ep(X, y, mu_beta, Sigma_beta, 
                                           r_init, Q_init, 
-                                          min_pass, 1, thresh, verbose)})
+                                          min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -68,7 +68,7 @@ if (method == "ep") {
 } else if (method == "fpep") {
   # Distributed computation
   source("scripts/fpep.R")
-  registerDoParallel(cores = 8)
+  registerDoParallel(cores = fpep_cores)
   
   for (i in 1:n_init) {
     print(paste0("Testing initialisation ", i))
@@ -77,7 +77,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); fpep(X, y, mu_beta, Sigma_beta, 
                                        r_init, Q_init, 
-                                       min_pass, max_pass, thresh, verbose)},
+                                       min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -88,14 +88,14 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); fpep(X, y, mu_beta, Sigma_beta, 
                                             r_init, Q_init, 
-                                            min_pass, max_pass, thresh, verbose)})
+                                            min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); fpep(X, y, mu_beta, Sigma_beta, 
                                             r_init, Q_init, 
-                                            min_pass, 1, thresh, verbose)})
+                                            min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
-      mem <- as.numeric(mark_res_2$mem_alloc)
+      mem <- as.numeric(mark_res_2$mem_alloc)/(N/fpep_cores)
       
       other_df <- other_df |> add_row(method = "fpep", init = i, time = time, mem = mem)
     } else {
@@ -120,7 +120,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); lp_site(X, y, mu_beta, Sigma_beta, 
                                           r_init, Q_init, 
-                                          min_pass, max_pass, thresh, verbose)},
+                                          min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -131,11 +131,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); lp_site(X, y, mu_beta, Sigma_beta, 
                                                r_init, Q_init, 
-                                               min_pass, max_pass, thresh, verbose)})
+                                               min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); lp_site(X, y, mu_beta, Sigma_beta, 
                                                r_init, Q_init, 
-                                               min_pass, 1, thresh, verbose)})
+                                               min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -162,7 +162,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); lp_tilted(X, y, mu_beta, Sigma_beta, 
                                             r_init, Q_init, 
-                                            min_pass, max_pass, thresh, verbose)},
+                                            min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -173,11 +173,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); lp_tilted(X, y, mu_beta, Sigma_beta, 
                                                  r_init, Q_init, 
-                                                 min_pass, max_pass, thresh, verbose)})
+                                                 min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); lp_tilted(X, y, mu_beta, Sigma_beta, 
                                                  r_init, Q_init, 
-                                                 min_pass, 1, thresh, verbose)})
+                                                 min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -204,7 +204,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); pep(X, y, mu_beta, Sigma_beta, 
                                       alpha, r_init, Q_init, 
-                                      min_pass, max_pass, thresh, verbose)},
+                                      min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -215,11 +215,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); pep(X, y, mu_beta, Sigma_beta, 
                                            alpha, r_init, Q_init, 
-                                           min_pass, max_pass, thresh, verbose)})
+                                           min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); pep(X, y, mu_beta, Sigma_beta, 
                                            alpha, r_init, Q_init, 
-                                           min_pass, 1, thresh, verbose)})
+                                           min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -246,7 +246,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); dep(X, y, mu_beta, Sigma_beta, 
                                       beta, r_init, Q_init, 
-                                      min_pass, max_pass, thresh, verbose)},
+                                      min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -257,11 +257,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); dep(X, y, mu_beta, Sigma_beta, 
                                            beta, r_init, Q_init, 
-                                           min_pass, max_pass, thresh, verbose)})
+                                           min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); dep(X, y, mu_beta, Sigma_beta, 
                                            beta, r_init, Q_init, 
-                                           min_pass, 1, thresh, verbose)})
+                                           min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -288,7 +288,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); dlep(X, y, mu_beta, Sigma_beta, 
                                        min_inner, max_inner, thresh_grad, outer_freq, r_init, Q_init, 
-                                       min_pass, max_pass_dl, thresh, verbose)},
+                                       min_pass, max_pass_dl, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -299,11 +299,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); dlep(X, y, mu_beta, Sigma_beta, 
                                             min_inner, max_inner, thresh_grad, outer_freq, r_init, Q_init, 
-                                            min_pass, max_pass_dl, thresh, verbose)})
+                                            min_pass, max_pass_dl, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); dlep(X, y, mu_beta, Sigma_beta, 
                                             min_inner, max_inner, thresh_grad, outer_freq, r_init, Q_init, 
-                                            min_pass, 1, thresh, verbose)})
+                                            min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -330,7 +330,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); sep(X, y, mu_beta, Sigma_beta, 
                                       r_init, Q_init, 
-                                      min_pass, max_pass, thresh, verbose)},
+                                      min_pass, max_pass, thresh, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -341,11 +341,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); sep(X, y, mu_beta, Sigma_beta, 
                                            r_init, Q_init, 
-                                           min_pass, max_pass, thresh, verbose)})
+                                           min_pass, max_pass, thresh, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); sep(X, y, mu_beta, Sigma_beta, 
                                            r_init, Q_init, 
-                                           min_pass, 1, thresh, verbose)})
+                                           min_pass, 1, thresh, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -372,7 +372,7 @@ if (method == "ep") {
     Q_init <- init_list[[i]]$Q_init
     res <- tryCatch({set.seed(1); bbep(X, y, mu_beta, Sigma_beta, 
                                        M_bb, epsilon, tau, r_init, Q_init, 
-                                       min_iter, max_iter, thresh_grad, verbose)},
+                                       min_iter, max_iter, thresh_grad, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -383,11 +383,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); bbep(X, y, mu_beta, Sigma_beta, 
                                             M_bb, epsilon, tau, r_init, Q_init, 
-                                            min_iter, max_iter, thresh_grad, verbose)})
+                                            min_iter, max_iter, thresh_grad, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); bbep(X, y, mu_beta, Sigma_beta, 
                                             M_bb, epsilon, tau, r_init, Q_init, 
-                                            min_iter, 1, thresh_grad, verbose)})
+                                            min_iter, 1, thresh_grad, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)
@@ -423,7 +423,7 @@ if (method == "ep") {
     
     res <- tryCatch({set.seed(1); auto_ep(X, y, mu_beta, Sigma_beta, 
                                           k, train_df, u_max, M_auto, r_init, Q_init, 
-                                          min_pass, max_pass, thresh, Inf, verbose)},
+                                          min_pass, max_pass, thresh, Inf, verbose, F)},
                     error = function(e) NA)
     if (is.list(res)) {
       for (j in 1:p) {
@@ -434,11 +434,11 @@ if (method == "ep") {
       
       mark_res_1 <- mark({set.seed(1); auto_ep(X, y, mu_beta, Sigma_beta, 
                                                k, train_df, u_max, M_auto, r_init, Q_init, 
-                                               min_pass, max_pass, thresh, Inf, verbose)})
+                                               min_pass, max_pass, thresh, Inf, verbose, F)})
       
       mark_res_2 <- mark({set.seed(1); auto_ep(X, y, mu_beta, Sigma_beta, 
                                                k, train_df, u_max, M_auto, r_init, Q_init, 
-                                               min_pass, 1, thresh, Inf, verbose)})
+                                               min_pass, 1, thresh, Inf, verbose, T)})
       
       time <- as.numeric(mark_res_1$median)
       mem <- as.numeric(mark_res_2$mem_alloc)

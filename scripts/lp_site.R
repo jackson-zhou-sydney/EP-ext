@@ -21,7 +21,7 @@ ti_l_site <- function(mu, sigma_2) {
 
 lp_site <- function(X, y, mu_beta, Sigma_beta,
                     r_init, Q_init,
-                    min_pass, max_pass, thresh, verbose) {
+                    min_pass, max_pass, thresh, verbose, mem) {
   # Laplace propagation using sites for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -90,6 +90,8 @@ lp_site <- function(X, y, mu_beta, Sigma_beta,
       
       Q_values[, , n] <- Q_tilde
       r_values[, n] <- r_tilde
+      
+      if (mem) return(NA)
     }
     
     if (pass == 1) {

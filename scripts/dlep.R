@@ -29,7 +29,7 @@ ti <- function(mu, sigma_2) {
 
 dlep <- function(X, y, mu_beta, Sigma_beta,
                  min_inner, max_inner, thresh_inner, outer_freq, r_init, Q_init,
-                 min_pass, max_pass, thresh, verbose) {
+                 min_pass, max_pass, thresh, verbose, mem) {
   # Double-loop EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -138,6 +138,8 @@ dlep <- function(X, y, mu_beta, Sigma_beta,
           Q_dot_hat <- Q_c_outer + Q_values[, , n]
           r_dot_hat <- r_c_outer + r_values[, n]
         }
+        
+        if (mem) return(NA)
       }
       
       deltas_Q[n] <- norm(Q_values[, , n] - Q_values_n_init, "F")

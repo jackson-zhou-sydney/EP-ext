@@ -46,7 +46,7 @@ tied_energy <- function(lambda, Z, Q_p, r_p, r_samples) {
 
 bbep <- function(X, y, mu_beta, Sigma_beta,
                  M, epsilon, tau, r_init, Q_init,
-                 min_iter, max_iter, thresh, verbose) {
+                 min_iter, max_iter, thresh, verbose, mem) {
   # Black-box EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -84,6 +84,8 @@ bbep <- function(X, y, mu_beta, Sigma_beta,
     } else {
       lambda <- lambda - min(epsilon, epsilon*tau/iter)*energy_grad
     }
+    
+    if (mem) return(NA)
   }
   
   # Returning in mean parameterisation

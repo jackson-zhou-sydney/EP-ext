@@ -29,7 +29,7 @@ ti <- function(mu, sigma_2) {
 
 fpep <- function(X, y, mu_beta, Sigma_beta,
                  r_init, Q_init,
-                 min_pass, max_pass, thresh, verbose) {
+                 min_pass, max_pass, thresh, verbose, mem) {
   # Fully-parallel EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -64,7 +64,7 @@ fpep <- function(X, y, mu_beta, Sigma_beta,
   for (pass in 1:max_pass) {
     if (verbose) print(paste0("---- Current pass: ", pass, " ----"))
     
-    foreach_res <- foreach(n = 1:N, .export = c("int_0", "int_1", "int_2", "ti")) %dopar% {
+    foreach_res <- foreach(n = 1:N, .export = c("log_int_0", "int_1_shift", "int_2_shift", "ti")) %dopar% {
       Q_c <- Q_dot - Q_values[, , n]
       r_c <- r_dot - r_values[, n]
       
@@ -100,6 +100,8 @@ fpep <- function(X, y, mu_beta, Sigma_beta,
                   Q_dot_local = Q_dot_local, 
                   r_dot_local = r_dot_local))
     }
+    
+    if (mem) return(NA)
     
     transpose_res <- transpose(foreach_res)
     

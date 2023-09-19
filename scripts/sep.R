@@ -29,7 +29,7 @@ ti <- function(mu, sigma_2) {
 
 sep <- function(X, y, mu_beta, Sigma_beta,
                 r_init, Q_init,
-                min_pass, max_pass, thresh, verbose) {
+                min_pass, max_pass, thresh, verbose, mem) {
   # Stochastic EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -84,6 +84,8 @@ sep <- function(X, y, mu_beta, Sigma_beta,
       
       Q <- Q_tilde
       r <- r_tilde
+      
+      if (mem) return(NA)
     }
     
     if (pass == 1) {

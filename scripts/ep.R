@@ -29,7 +29,7 @@ ti <- function(mu, sigma_2) {
 
 ep <- function(X, y, mu_beta, Sigma_beta,
                r_init, Q_init,
-               min_pass, max_pass, thresh, verbose) {
+               min_pass, max_pass, thresh, verbose, mem) {
   # Standard EP for probit regression
   N <- nrow(X)
   p <- ncol(X)
@@ -92,6 +92,8 @@ ep <- function(X, y, mu_beta, Sigma_beta,
       
       Q_values[, , n] <- Q_tilde
       r_values[, n] <- r_tilde
+      
+      if (mem) return(NA)
     }
     
     if (pass == 1) {
